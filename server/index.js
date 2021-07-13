@@ -43,7 +43,7 @@ router.post("/", files, async (req, res) => {
 
     await execa("convert", [pdf[0].path, `/tmp/contra-cheque.png`]);
     console.log(excel[0]);
-    const rows = await readXlsxFile(excel[0].path/*, { sheet: 3 }*/);
+    const rows = await readXlsxFile(excel[0].path, { sheet: 3 });// for dev tests comment {sheet:3}
 
     let lineNumber = 0;
 
@@ -58,10 +58,10 @@ router.post("/", files, async (req, res) => {
         continue;
       }
 
-      const nome = row[1];// maybe number 2 
+      const nome = row[2];// for dev use number 1 how indicie 
       if (!nome || !nome.trim()) break;
 
-      const email = row[2];//maybe number 3
+      const email = row[3];//for dev use number 2 how indicie
       if (!email) continue;
 
       const pagina = lineNumber - 2;
