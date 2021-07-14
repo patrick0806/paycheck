@@ -38,6 +38,7 @@ router.post("/", files, async (req, res) => {
 
   try {
     const { pdf, excel } = req.files;
+    console.log("recebi os arquivos");
 
     await cleanUpOldImages();
 
@@ -53,6 +54,7 @@ router.post("/", files, async (req, res) => {
     const dataLegivel = `${nomeDoMes} de ${ano}`;
 
     for (const row of rows) {
+      console.log("gerando a página de contra checeque");
       lineNumber++;
       if (lineNumber === 1) {
         continue;
@@ -83,10 +85,11 @@ router.post("/", files, async (req, res) => {
           },
         ],
       };
+      console.log("disparando o email");
       await sgMail.send(msg);
     }
-
-   res.send({message:"Emails Enviados com sucesso"});
+    res.send({message:"Emails Enviados com sucesso"});
+    console.log("Todos os emails foram enviados com sucesso");
   } catch (err) {
     console.error("-----------------------");
     console.error(err);
