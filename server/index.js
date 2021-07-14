@@ -11,17 +11,17 @@ const app = express();
 const router = express.Router();
 app.use(cors());
 app.use(router);
-app.listen(3005,()=>{console.log("Api Running in 3005 port")});
+app.listen(3005, () => {
+  console.log("Api Running in 3005 port");
+});
 
 const sgMail = require("@sendgrid/mail");
 
 const sendgridKrebsEngKey =
-"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";
+  "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";
 sgMail.setApiKey(sendgridKrebsEngKey);
 
 const upload = multer({ dest: "/tmp/" });
-
-
 
 const files = upload.fields([
   { name: "pdf", maxCount: 1 },
@@ -35,16 +35,24 @@ async function cleanUpOldImages() {
 }
 
 router.post("/", files, async (req, res) => {
-
   try {
     const { pdf, excel } = req.files;
     console.log("recebi os arquivos");
 
     await cleanUpOldImages();
 
-    await execa("convert", [pdf[0].path, `/tmp/contra-cheque.png`]);
-    console.log(excel[0]);
-    const rows = await readXlsxFile(excel[0].path, { sheet: 3 });// for dev tests comment {sheet:3}
+    await execa("convert", [
+      `-density 300`,
+      `-trim`,
+      pdf[0].path,
+      `-quality 100`,
+      `-background white`,
+      `-alpha remove`,
+      `-alpha off`,
+      `/tmp/contra-cheque.png`,
+    ]);
+    console.log("passei do execa");
+    const rows = await readXlsxFile(excel[0].path, { sheet: 3 }); // for dev tests comment {sheet:3}
 
     let lineNumber = 0;
 
@@ -54,16 +62,18 @@ router.post("/", files, async (req, res) => {
     const dataLegivel = `${nomeDoMes} de ${ano}`;
 
     for (const row of rows) {
-      console.log("gerando a página de contra checeque");
+      console.log(
+        `gerando a página de contra checeque numero ${row} de ${rows}`
+      );
       lineNumber++;
       if (lineNumber === 1) {
         continue;
       }
 
-      const nome = row[2];// for dev use number 1 how indicie 
+      const nome = row[2];
       if (!nome || !nome.trim()) break;
 
-      const email = row[3];//for dev use number 2 how indicie
+      const email = row[3];
       if (!email) continue;
 
       const pagina = lineNumber - 2;
@@ -88,7 +98,7 @@ router.post("/", files, async (req, res) => {
       console.log("disparando o email");
       await sgMail.send(msg);
     }
-    res.send({message:"Emails Enviados com sucesso"});
+    res.send({ message: "Emails Enviados com sucesso" });
     console.log("Todos os emails foram enviados com sucesso");
   } catch (err) {
     console.error("-----------------------");
