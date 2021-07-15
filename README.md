@@ -10,7 +10,7 @@
 
 ###### 3 Selecione o repositorio e se quiser reimplar o aplicativo a cada alteração do Git selecione a opção Autodeploy code changes e clique em Next.
 
-##### 4 Insira um nome para seu aplicativo e escolha a região onde deseja que seu aplicativo seja hospedado. Clique em Avançar.
+###### 4 Insira um nome para seu aplicativo e escolha a região onde deseja que seu aplicativo seja hospedado. Clique em Avançar.
 
 para qualquer duvida o passo a passo completo pode ser encontrado neste [link](https://docs.digitalocean.com/products/app-platform/how-to/create-apps/) 
 
