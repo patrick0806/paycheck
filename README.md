@@ -2,8 +2,17 @@
 
 #### O disparo de emails é feito pelo SendGrid a apikey de envio está ligada a conta patrick@digituz.com.br
 
-#### Para fazer o app rodar na Digital Ocean App plataform tudo que é preciso é deixar o código no github e vincular com a DigitalOcean
+#### Para fazer o app rodar na Digital Ocean App plataform é seguir estes passos
 
+###### 1 Acesse https://cloud.digitalocean.com/apps e clique em Criar aplicativo.
+
+###### 2 Selecione a fonte do seu aplicativo, no nosso caso o github.
+
+###### 3 Selecione o repositorio e se quiser reimplar o aplicativo a cada alteração do Git selecione a opção Autodeploy code changes e clique em Next.
+
+##### 4 Insira um nome para seu aplicativo e escolha a região onde deseja que seu aplicativo seja hospedado. Clique em Avançar.
+
+para qualquer duvida o passo a passo completo pode ser encontrado neste [link](https://docs.digitalocean.com/products/app-platform/how-to/create-apps/) 
 
 #### Para rodar em um servidor configurado manualmente a geração de contra cheques é necessario 
 
