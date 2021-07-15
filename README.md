@@ -1,11 +1,11 @@
 # Configuração
 
-## O disparo de emails é feito pelo SendGrid a apikey de envio está ligada a conta patrick@digituz.com.br
+#### O disparo de emails é feito pelo SendGrid a apikey de envio está ligada a conta patrick@digituz.com.br
 
-## Para fazer o app rodar na Digital Ocean App plataform tudo que é preciso é deixar o código no github e vincular com a DigitalOcean
+#### Para fazer o app rodar na Digital Ocean App plataform tudo que é preciso é deixar o código no github e vincular com a DigitalOcean
 
 
-## Para rodar em um servidor configurado manualmente a geração de contra cheques é necessario 
+#### Para rodar em um servidor configurado manualmente a geração de contra cheques é necessario 
 
 Instalar Imagemick 
 ```bash
