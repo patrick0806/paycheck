@@ -5,6 +5,7 @@ const multer = require("multer");
 const readXlsxFile = require("read-excel-file/node");
 const { format, sub } = require("date-fns");
 const { ptBR } = require("date-fns/locale");
+const exec = require("child_process").exec;
 const cors = require("cors");
 
 const app = express();
@@ -17,8 +18,8 @@ app.listen(3005, () => {
 
 const sgMail = require("@sendgrid/mail");
 
-const sendgridKrebsEngKey =
-  "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";
+const sendgridKrebsEngKey ="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";//this apikey stay in account patrick@digituz.com.br
+
 sgMail.setApiKey(sendgridKrebsEngKey);
 
 const upload = multer({ dest: "/tmp/" });
@@ -40,7 +41,7 @@ router.post("/", files, async (req, res) => {
     console.log("recebi os arquivos");
 
     await cleanUpOldImages();
-    const exec = require("child_process").exec;
+    
     child = exec(`convert -density 300 -trim ${pdf[0].path} -quality 100 -background white -alpha remove -alpha off /tmp/contra-cheque.png`,
     async function(err,stdout,stderr){
       if(err){
@@ -77,7 +78,7 @@ router.post("/", files, async (req, res) => {
       const file = await fs.readFile(`/tmp/contra-cheque-${pagina}.png`);
       const attachment = file.toString("base64");
       const msg = {
-        from: "Gilberto Krebs <gilberto@krebseng.com.br>",
+        from: "Gilberto Krebs <patrick@digituz.com.br>",//<gilberto@krebseng.com.br>
         to: email,
         subject: `Contra-cheque ${dataLegivel}`,
         html: `<p>Olá, ${nome}</p><p>Neste e-mail você encontra o seu contra-cheque referente a ${dataLegivel}.</p>`,
@@ -91,73 +92,15 @@ router.post("/", files, async (req, res) => {
         ],
       };
       
-      await sgMail.send(msg);
+      await sgMail.send(msg).catch(err=>{
+        console.log(err.response.body.errors);
+      });
       console.log(`email disparado para ${email}`);
     }
     res.send({ message: "Emails Enviados com sucesso" });
     console.log("Todos os emails foram enviados com sucesso");
     })
 
-    /* await execa("convert", [
-      `-density 300`,
-      `-trim`,
-      pdf[0].path,
-      `-quality 100`,
-      `-background white`,
-      `-alpha remove`,
-      `-alpha off`,
-      `/tmp/contra-cheque.png`,
-    ]);
-
-    console.log("passei do execa");
-    const rows = await readXlsxFile(excel[0].path, { sheet: 3 }); // for dev tests comment {sheet:3}
-
-    let lineNumber = 0;
-
-    const mesPassado = sub(new Date(), { months: 1 });
-    const nomeDoMes = format(mesPassado, "MMMM", { locale: ptBR });
-    const ano = format(mesPassado, "yyyy");
-    const dataLegivel = `${nomeDoMes} de ${ano}`;
-
-    for (const row of rows) {
-      console.log(
-        `gerando a página de contra checeque numero ${row} de ${rows}`
-      );
-      lineNumber++;
-      if (lineNumber === 1) {
-        continue;
-      }
-
-      const nome = row[2];
-      if (!nome || !nome.trim()) break;
-
-      const email = row[3];
-      if (!email) continue;
-
-      const pagina = lineNumber - 2;
-
-      const file = await fs.readFile(`/tmp/contra-cheque-${pagina}.png`);
-      const attachment = file.toString("base64");
-      console.log(email);
-      const msg = {
-        from: "Gilberto Krebs <gilberto@krebseng.com.br>",
-        to: email,
-        subject: `Contra-cheque ${dataLegivel}`,
-        html: `<p>Olá, ${nome}</p><p>Neste e-mail você encontra o seu contra-cheque referente a ${dataLegivel}.</p>`,
-        attachments: [
-          {
-            content: attachment,
-            filename: "contra-cheque.png",
-            type: "image/png",
-            disposition: "attachment",
-          },
-        ],
-      };
-      console.log("disparando o email");
-      await sgMail.send(msg);
-    }
-    res.send({ message: "Emails Enviados com sucesso" });
-    console.log("Todos os emails foram enviados com sucesso"); */
   } catch (err) {
     console.error("-----------------------");
     console.error(err);
