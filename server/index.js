@@ -18,7 +18,7 @@ app.listen(3005, () => {
 
 const sgMail = require("@sendgrid/mail");
 
-const sendgridKrebsEngKey ="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";//this apikey stay in account patrick@digituz.com.br
+const sendgridKrebsEngKey ="";//this apikey stay in account patrick@digituz.com.br
 
 sgMail.setApiKey(sendgridKrebsEngKey);
 
