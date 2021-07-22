@@ -6,10 +6,11 @@ const readXlsxFile = require("read-excel-file/node");
 const { format, sub } = require("date-fns");
 const { ptBR } = require("date-fns/locale");
 const exec = require("child_process").exec;
+require('dotenv').config()
 const cors = require("cors");
-
 const app = express();
 const router = express.Router();
+
 app.use(cors());
 app.use(router);
 app.listen(3005, () => {
@@ -18,7 +19,7 @@ app.listen(3005, () => {
 
 const sgMail = require("@sendgrid/mail");
 
-const sendgridKrebsEngKey ="";//this apikey stay in account patrick@digituz.com.br
+const sendgridKrebsEngKey =process.env.SENDGRID_APIKEY;//this apikey stay in account patrick@digituz.com.br
 
 sgMail.setApiKey(sendgridKrebsEngKey);
 
@@ -38,6 +39,7 @@ async function cleanUpOldImages() {
 router.post("/", files, async (req, res) => {
   try {
     const { pdf, excel } = req.files;
+    
     console.log("recebi os arquivos");
 
     await cleanUpOldImages();

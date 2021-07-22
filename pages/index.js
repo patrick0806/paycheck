@@ -9,7 +9,7 @@ export default function Home() {
     const formData = new FormData();
     formData.append("pdf", data.pdf[0]);
     formData.append("excel", data.excel[0]);
-
+    
     const res = await fetch("http://localhost:3005", {
       body: formData,
       method: "POST",
