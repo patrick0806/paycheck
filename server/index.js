@@ -5,8 +5,10 @@ const multer = require("multer");
 const readXlsxFile = require("read-excel-file/node");
 const { format, sub } = require("date-fns");
 const { ptBR } = require("date-fns/locale");
+const SendinBlue = require("sib-api-v3-sdk");
+const defaultClient = SendinBlue.ApiClient.instance;
 const exec = require("child_process").exec;
-require('dotenv').config()
+require("dotenv").config();
 const cors = require("cors");
 const app = express();
 const router = express.Router();
@@ -17,11 +19,10 @@ app.listen(3005, () => {
   console.log("Api Running in 3005 port");
 });
 
-const sgMail = require("@sendgrid/mail");
+const apiKey = defaultClient.authentications["api-key"];
+apiKey.apiKey = process.env.SEDINBLUE_APIKEY;
 
-const sendgridKrebsEngKey =process.env.SENDGRID_APIKEY;//this apikey stay in account patrick@digituz.com.br
-
-sgMail.setApiKey(sendgridKrebsEngKey);
+const apiInstance = new SendinBlue.TransactionalEmailsApi();
 
 const upload = multer({ dest: "/tmp/" });
 
@@ -39,48 +40,75 @@ async function cleanUpOldImages() {
 router.post("/", files, async (req, res) => {
   try {
     const { pdf, excel } = req.files;
-    
+
     console.log("recebi os arquivos");
 
     await cleanUpOldImages();
-    
-    child = exec(`convert -density 300 -trim ${pdf[0].path} -quality 100 -background white -alpha remove -alpha off /tmp/contra-cheque.png`,
-    async function(err,stdout,stderr){
-      if(err){
-        console.log(err);  
-        throw stderr;
-      }
-    console.log("passei do execa");
-    const rows = await readXlsxFile(excel[0].path, { sheet: 3 }); // for dev tests comment {sheet:3}
 
-    let lineNumber = 0;
+    child = exec(
+      `convert -density 300 ${pdf[0].path} -quality 100 -background white -alpha remove -alpha off /tmp/contra-cheque.png`,
+      async function (err, stdout, stderr) {
+        if (err) {
+          console.log(err);
+          throw stderr;
+        }
+        console.log("passei do execa");
+        const rows = await readXlsxFile(excel[0].path, { sheet: 3 }); // for dev tests comment {sheet:3}
 
-    const mesPassado = sub(new Date(), { months: 1 });
-    const nomeDoMes = format(mesPassado, "MMMM", { locale: ptBR });
-    const ano = format(mesPassado, "yyyy");
-    const dataLegivel = `${nomeDoMes} de ${ano}`;
-    
-    console.log(
-      `iniciando o envio dos contracheques`
-    );
-    for (const row of rows) {
-      lineNumber++;
-      if (lineNumber === 1) {
-        continue;
-      }
+        let lineNumber = 0;
 
-      const nome = row[2];
-      if (!nome || !nome.trim()) break;
+        const mesPassado = sub(new Date(), { months: 1 });
+        const nomeDoMes = format(mesPassado, "MMMM", { locale: ptBR });
+        const ano = format(mesPassado, "yyyy");
+        const dataLegivel = `${nomeDoMes} de ${ano}`;
 
-      const email = row[3];
-      if (!email) continue;
+        console.log(`iniciando o envio dos contracheques`);
+        for (const row of rows) {
+          lineNumber++;
+          if (lineNumber === 1) {
+            continue;
+          }
 
-      const pagina = lineNumber - 2;
+          const nome = row[2];
+          if (!nome || !nome.trim()) break;
 
-      const file = await fs.readFile(`/tmp/contra-cheque-${pagina}.png`);
-      const attachment = file.toString("base64");
-      const msg = {
-        from: "Gilberto Krebs <patrick@digituz.com.br>",//<gilberto@krebseng.com.br>
+          const email = row[3];
+          if (!email) continue;
+
+          const pagina = lineNumber - 2;
+
+          const file = await fs.readFile(`/tmp/contra-cheque-${pagina}.png`);
+          const attachment = file.toString("base64");
+          const sendSmtpEmail = new SendinBlue.SendSmtpEmail();
+          sendSmtpEmail.subject = `Contra-cheque ${dataLegivel}`;
+          sendSmtpEmail.htmlContent =`<p>Olá, ${nome}</p><p>Neste e-mail você encontra o seu contra-cheque referente a ${dataLegivel}.</p>`
+          sendSmtpEmail.sender = {
+            name: "Gilberto Krebs",
+            email: "gilberto@krebseng.com.br",
+          };
+          sendSmtpEmail.to = [
+            { email, name:nome},
+          ];
+          sendSmtpEmail.headers = {"Some-Custom-Name": "unique-id-1234" };
+          sendSmtpEmail.attachment= [
+            {
+              content: attachment,
+              name: "contra-cheque.png",
+            },
+          ]
+
+          apiInstance.sendTransacEmail(sendSmtpEmail).then(
+            function (data) {
+              console.log(
+                "API called successfully. Returned data: " +
+                  JSON.stringify(data)
+              );
+            },
+            function (error) {
+              console.error(error);
+            }
+          );
+          /* from: "Gilberto Krebs <patrick@digituz.com.br>",//<gilberto@krebseng.com.br>
         to: email,
         subject: `Contra-cheque ${dataLegivel}`,
         html: `<p>Olá, ${nome}</p><p>Neste e-mail você encontra o seu contra-cheque referente a ${dataLegivel}.</p>`,
@@ -91,18 +119,12 @@ router.post("/", files, async (req, res) => {
             type: "image/png",
             disposition: "attachment",
           },
-        ],
-      };
-      
-      await sgMail.send(msg).catch(err=>{
-        console.log(err.response.body.errors);
-      });
-      console.log(`email disparado para ${email}`);
-    }
-    res.send({ message: "Emails Enviados com sucesso" });
-    console.log("Todos os emails foram enviados com sucesso");
-    })
-
+        ], */
+        }
+        res.send({ message: "Emails Enviados com sucesso" });
+        console.log("Todos os emails foram enviados com sucesso");
+      }
+    );
   } catch (err) {
     console.error("-----------------------");
     console.error(err);
