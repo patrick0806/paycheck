@@ -63,6 +63,7 @@ router.post("/", files, async (req, res) => {
         const dataLegivel = `${nomeDoMes} de ${ano}`;
 
         console.log(`iniciando o envio dos contracheques`);
+
         for (const row of rows) {
           lineNumber++;
           if (lineNumber === 1) {
@@ -81,21 +82,19 @@ router.post("/", files, async (req, res) => {
           const attachment = file.toString("base64");
           const sendSmtpEmail = new SendinBlue.SendSmtpEmail();
           sendSmtpEmail.subject = `Contra-cheque ${dataLegivel}`;
-          sendSmtpEmail.htmlContent =`<p>Olá, ${nome}</p><p>Neste e-mail você encontra o seu contra-cheque referente a ${dataLegivel}.</p>`
+          sendSmtpEmail.htmlContent = `<p>Olá, ${nome}</p><p>Neste e-mail você encontra o seu contra-cheque referente a ${dataLegivel}.</p>`;
           sendSmtpEmail.sender = {
             name: "Gilberto Krebs",
             email: "gilberto@krebseng.com.br",
           };
-          sendSmtpEmail.to = [
-            { email, name:nome},
-          ];
-          sendSmtpEmail.headers = {"Some-Custom-Name": "unique-id-1234" };
-          sendSmtpEmail.attachment= [
+          sendSmtpEmail.to = [{ email, name: nome }];
+          sendSmtpEmail.headers = { "Some-Custom-Name": "unique-id-1234" };
+          sendSmtpEmail.attachment = [
             {
               content: attachment,
               name: "contra-cheque.png",
             },
-          ]
+          ];
 
           apiInstance.sendTransacEmail(sendSmtpEmail).then(
             function (data) {
@@ -106,21 +105,11 @@ router.post("/", files, async (req, res) => {
             },
             function (error) {
               console.error(error);
+              res.send({ err: "Falha ao enviar os emails" });
             }
           );
-          /* from: "Gilberto Krebs <patrick@digituz.com.br>",//<gilberto@krebseng.com.br>
-        to: email,
-        subject: `Contra-cheque ${dataLegivel}`,
-        html: `<p>Olá, ${nome}</p><p>Neste e-mail você encontra o seu contra-cheque referente a ${dataLegivel}.</p>`,
-        attachments: [
-          {
-            content: attachment,
-            filename: "contra-cheque.png",
-            type: "image/png",
-            disposition: "attachment",
-          },
-        ], */
         }
+
         res.send({ message: "Emails Enviados com sucesso" });
         console.log("Todos os emails foram enviados com sucesso");
       }
@@ -129,7 +118,7 @@ router.post("/", files, async (req, res) => {
     console.error("-----------------------");
     console.error(err);
     console.error("-----------------------");
-    res.send(err);
+    res.send({ err: "Falha ao separar o PDF" });
   }
 });
 
