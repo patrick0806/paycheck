@@ -9,8 +9,8 @@ export default function Home() {
     const formData = new FormData();
     formData.append("pdf", data.pdf[0]);
     formData.append("excel", data.excel[0]);
-    
-    const res = await fetch("http://localhost:3005", {
+    const url = process.env.NODE_ENV != 'production' ? 'http://localhost:3005' : 'https://contra-cheque-r58j6.ondigitalocean.app:3005'; 
+    const res = await fetch(url, {
       body: formData,
       method: "POST",
     });
