@@ -9,17 +9,22 @@ export default function Home() {
     const formData = new FormData();
     formData.append("pdf", data.pdf[0]);
     formData.append("excel", data.excel[0]);
-    //const url = process.env.NODE_ENV != 'production' ? 'http://localhost:3005' : 'https://contra-cheque-r58j6.ondigitalocean.app:3005'; 
-    const res = await fetch('http://localhost:3005', {
-      body: formData,
-      method: "POST",
-    });
-
-    const response = await res.json();
-    setProcessFiles(false);
-    if (response.message) {
-      alert(response.message);
-    } else {
+    const url = process.env.NODE_ENV != 'production' ? 'http://localhost:3005' : 'https://contra-cheque-r58j6.ondigitalocean.app:3005'; 
+    try{
+      const res = await fetch(url, {
+        body: formData,
+        method: "POST",
+      });
+  
+      const response = await res.json();
+      setProcessFiles(false);
+      if (response.message) {
+        alert(response.message);
+      } else {
+        alert("Houve uma falha ao enviar os emails");
+      }
+    }catch(err){
+      console.log(err);
       alert("Houve uma falha ao enviar os emails");
     }
   };
